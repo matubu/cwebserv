@@ -1,7 +1,7 @@
 #ifndef LOGS_H
-# define LOG_H
+# define LOGS_H
 
-int logerror(char *str);
-int loginfo(char *str);
+void loginfo(char *str);
+void logerror(char *str, int status);
 
 #endif
