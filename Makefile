@@ -8,6 +8,9 @@ bin/%.o: src/%.c
 all: $(NAME)
 $(NAME): $(OUTPUT)
 	gcc $(FLAGS) $(OUTPUT) -o $(NAME)
+setup:
+	mkdir logs
+	mkdir bin
 clean:
 	rm -rf $(NAME)
 fclean: clean

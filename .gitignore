@@ -1,4 +1,3 @@
 *.o
 *.log
-/bin/*
 src/raspistill.c

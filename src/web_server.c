@@ -90,7 +90,7 @@ void *init_server() {
 		recv(new_socket, buffer, BUFF_SIZE, 0);
 		t_request request = parse_request(buffer);
 
-		tprint(1, "{\n\ttype: \"%s\",\n\turl: \"%s\",\n\tsheme: \"%s\"\n}\n", request.type, request.url, request.protocol);
+		//tprint(1, "{\n\ttype: \"%s\",\n\turl: \"%s\",\n\tsheme: \"%s\"\n}\n", request.type, request.url, request.protocol);
 		if (!strdiff(request.type, "GET") && !strdiff(request.url, "/test.jpg"))
 			send_file(new_socket, "views/test.jpg", "image/jpg");
 		else
