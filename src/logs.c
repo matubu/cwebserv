@@ -16,10 +16,8 @@ void	logfile(char *filename, char *str)
 
 	if (fd == -1)
 		print(2, "Error writing in log file\n");
-	write(fd, date, 24);
-	write(fd, ": ", 2);
-	print(fd, str);
-	write(fd, "\n", 1);
+	date[24] = '\0';
+	tprint(fd, "%s: %s\n", date, str);
 	close(fd);
 }
 
@@ -33,6 +31,7 @@ void	logerror(char *str, int status)
 	logfile(ERRORS_LOG, str);
 	if (!status)
 		return;
-	logfile(ERRORS_LOG, "exiting program");
+	tprint(2, "Exiting with status code %d: \"%s\"\n", status, str);
+	logfile(ERRORS_LOG, "Exiting program...");
 	exit(status);
 }

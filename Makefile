@@ -1,4 +1,4 @@
-FLAGS = -Wall -Wextra -Werror
+FLAGS = -pthread -Wall -Wextra -Werror
 SRCS = $(wildcard src/*.c)
 OUTPUT = $(patsubst src/%.c,bin/%.o,$(SRCS))
 NAME = main
