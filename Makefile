@@ -11,7 +11,7 @@ $(NAME): $(OUTPUT)
 setup: fclean
 	mkdir logs
 	mkdir bin
-run:
+run: all
 	sudo ./main
 clean:
 	rm -rf $(NAME)
