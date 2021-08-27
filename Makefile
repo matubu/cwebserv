@@ -11,8 +11,11 @@ $(NAME): $(OUTPUT)
 setup: fclean
 	mkdir logs
 	mkdir bin
-run: all
+update:
+	git pull
+runlocal: all
 	sudo ./main
+run: update runlocal
 clean:
 	rm -rf $(NAME)
 fclean: clean

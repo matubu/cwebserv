@@ -1,4 +1,4 @@
 *.o
 *.log
+src/raspycam.c
 main
-src/raspistill.c

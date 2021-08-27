@@ -1,8 +1,9 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <fcntl.h>
+#include <sys/sendfile.h>
 
-#define BUFF_SIZE 256
+#define BUFF_SIZE 8192
 
 int	len(const char *str)
 {
@@ -51,11 +52,10 @@ void	print_int(int fd, int nb)
 void print_file(int ofd, char *filename)
 {
 	int	fd = open(filename, O_RDONLY);
-	int ret;
-	char buff[BUFF_SIZE];
+	long int off = 0;
 
-	while ((ret = read(fd, buff, BUFF_SIZE)))
-		write(ofd, buff, ret);
+	while (sendfile(ofd, fd, &off, BUFF_SIZE))
+		;
 	close(fd);
 }
 
@@ -65,17 +65,16 @@ void	tprint(int fd, char *str, ...)
 {
 	va_list args;
 	va_start(args, str);
-	//unsigned int i = 0;
+	unsigned int i = 0;
 
 	while (*str)
 	{
 		if (*str++ != '%')
-			write(fd, str-1, 1);
-			//i++;
+			i++;
 		else
 		{
-			//write(fd, str - 1 - i, i);
-			//i = 0;
+			write(fd, str - 1 - i, i);
+			i = 0;
 			switch (*str++)
 			{
 				case '%':
@@ -103,7 +102,7 @@ void	tprint(int fd, char *str, ...)
 			}
 		}
 	}
-	//write(fd, str - i, i);
+	write(fd, str - i, i);
 }
 
 /**

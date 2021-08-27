@@ -11,8 +11,6 @@
 #include "logs.h"
 #include "utils.h"
 
-#include <stdio.h>
-
 #define BUFF_SIZE 1024
 #define NOT_FOUND "views/404.html"
 
