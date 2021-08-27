@@ -12,19 +12,62 @@
 #include "utils.h"
 
 #define BUFF_SIZE 1024
+#define VIEWS_FOLDER "views/"
+#define PATH_BUFFER 1024
 #define NOT_FOUND "views/404.html"
 
-void	send_file(int ofd, char *filename, char *filetype)
+typedef struct filetype_s {
+	char *ext;
+	char *mime;
+} filetype_t;
+
+const filetype_t filetypes[] = {
+	{ ".html", "text/html" },
+	{ ".htm", "text/html" },
+	{ ".txt", "text/plain" },
+	{ ".jpg", "image/jpg" },
+	{ ".jpeg", "image/jpeg" },
+	{ ".mp4", "video/mp4" },
+	{ ".gif", "image/gif" },
+	{ ".ico", "image/ico" },
+	{ 0 }
+};
+
+void	send_file(int ofd, char *path, char *filetype)
 {
   struct stat stats;
-  if (!filename || stat(filename, &stats) == -1) {
+	if (!path || stat(path, &stats) == -1) {
 		if (!strdiff("text/html", filetype) && stat(NOT_FOUND, &stats) == 0)
 			tprint(ofd, "HTTP/1.1 404 Not Found\nContent-length: %d\nContent-Type: text/html\n\n%t", stats.st_size, NOT_FOUND);
 		else
 			print(ofd, "HTTP/1.1 404 Not Found\n\n");
 		return;
 	}
-	tprint(ofd, "HTTP/1.1 200 OK\nContent-length: %d\nContent-Type: %s\n\n%t", stats.st_size, filetype, filename);
+	tprint(ofd, "HTTP/1.1 200 OK\nContent-length: %d\nContent-Type: %s\n\n%t", stats.st_size, filetype, path);
+}
+
+void send_views_file(int ofd, char *filename)
+{
+	char path[PATH_BUFFER] = VIEWS_FOLDER;
+	char *filetype = 0;
+	int i = -1;
+	int j = 0;
+
+	while (filetypes[++i].ext)
+		if (endwith(filetypes[i].ext, filename) && (filetype = filetypes[i].mime))
+			break;
+	if (!filetype)
+	{
+		send_file(ofd, 0, "text/html");
+		return;
+	}
+	i = 0;
+	while (path[i])
+		i++;
+	while (filename[j] && i < PATH_BUFFER)
+		path[i++] = filename[j++];
+	path[i] = '\0';
+	send_file(ofd, path, filetype);
 }
 
 typedef struct s_request
@@ -54,6 +97,19 @@ t_request parse_request(char *str)
 	*head++ = '\0';
 	request.protocol = head;
 	return request;
+}
+
+/**
+ * return 1 if the path is safe
+ */
+int verify_path(char *str)
+{
+	int i = -1;
+
+	while (str[++i])
+		if (str[i] == '.' && (i == 0 || str[i - 1] == '/' || str[i - 1] == '\\'))
+			return 0;
+	return 1;
 }
 
 void *init_server() {
@@ -88,12 +144,15 @@ void *init_server() {
 		recv(new_socket, buffer, BUFF_SIZE, 0);
 		t_request request = parse_request(buffer);
 
-		//tprint(1, "{\n\ttype: \"%s\",\n\turl: \"%s\",\n\tsheme: \"%s\"\n}\n", request.type, request.url, request.protocol);
-		if (!strdiff(request.type, "GET") && !strdiff(request.url, "/test.jpg"))
-			send_file(new_socket, "views/test.jpg", "image/jpg");
+		tprint(1, "{\n\ttype: \"%s\",\n\turl: \"%s\",\n\tsheme: \"%s\"\n}\n", request.type, request.url, request.protocol);
+		tprint(1, "%s\n", verify_path(request.url) ? "safe" : "unsafe");
+
+		if (verify_path(request.url))
+			send_views_file(new_socket, request.url);
 		else
 			send_file(new_socket, 0, "text/html");
 
+		print(1, "connection closed\n");
 		close(new_socket);
 	}
   pthread_exit(NULL);

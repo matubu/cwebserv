@@ -115,3 +115,16 @@ int	strdiff(char *a, char *b)
 	return (*a - *b);
 }
 //startwith
+
+int endwith(char *a, char *b)
+{
+	int i;
+	int j;
+
+	i = len(a);
+	j = len(b);
+	while (--i >= 0 && --j >= 0)
+		if (a[i] != b[j])
+			return 0;
+	return 1;
+}
