@@ -13,9 +13,9 @@ setup: fclean
 	mkdir bin
 update:
 	git pull
-runlocal: all
+localrun: all
 	sudo ./main
-run: update runlocal
+run: update localrun
 clean:
 	rm -rf $(NAME)
 fclean: clean
