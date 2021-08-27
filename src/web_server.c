@@ -145,14 +145,14 @@ void *init_server() {
 		t_request request = parse_request(buffer);
 
 		tprint(1, "{\n\ttype: \"%s\",\n\turl: \"%s\",\n\tsheme: \"%s\"\n}\n", request.type, request.url, request.protocol);
-		tprint(1, "%s\n", verify_path(request.url) ? "safe" : "unsafe");
 
-		if (verify_path(request.url))
+		if (!strdiff(request.url, "/"))
+			send_file(new_socket, "views/index.html", "text/html");
+		else if (verify_path(request.url))
 			send_views_file(new_socket, request.url);
 		else
 			send_file(new_socket, 0, "text/html");
 
-		print(1, "connection closed\n");
 		close(new_socket);
 	}
   pthread_exit(NULL);
