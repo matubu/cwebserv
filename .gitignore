@@ -2,3 +2,5 @@
 *.log
 src/raspycam.c
 main
+.mp4
+.h264
