@@ -1,7 +1,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
-#include <stdlib.h>
 #include "utils.h"
 
 #define INFO_LOG "logs/info.log"
@@ -26,12 +25,7 @@ void	loginfo(char *str)
 	logfile(INFO_LOG, str);
 }
 
-void	logerror(char *str, int status)
+void	logerror(char *str)
 {
 	logfile(ERRORS_LOG, str);
-	if (!status)
-		return;
-	tprint(2, "Exiting with status code %d: \"%s\"\n", status, str);
-	logfile(ERRORS_LOG, "Exiting program...");
-	exit(status);
 }

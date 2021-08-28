@@ -59,8 +59,6 @@ void print_file(int ofd, char *filename)
 	close(fd);
 }
 
-
-//case "test %"
 void	tprint(int fd, char *str, ...)
 {
 	va_list args;

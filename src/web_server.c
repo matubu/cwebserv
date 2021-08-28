@@ -3,10 +3,8 @@
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <netdb.h> //gethostbyname
 #include <fcntl.h> //open close
 #include <unistd.h> //read write
-#include <stdlib.h> //exit
 #include <pthread.h>
 #include "logs.h"
 #include "utils.h"
@@ -15,6 +13,7 @@
 #define VIEWS_FOLDER "views/"
 #define PATH_BUFFER 1024
 #define NOT_FOUND "views/404.html"
+#define PORT 80
 
 typedef struct filetype_s {
 	char *ext;
@@ -36,14 +35,13 @@ const filetype_t filetypes[] = {
 void	send_file(int ofd, char *path, char *filetype)
 {
   struct stat stats;
-	if (!path || stat(path, &stats) == -1) {
-		if (!strdiff("text/html", filetype) && stat(NOT_FOUND, &stats) == 0)
-			tprint(ofd, "HTTP/1.1 404 Not Found\nContent-length: %d\nContent-Type: text/html\n\n%t", stats.st_size, NOT_FOUND);
-		else
-			print(ofd, "HTTP/1.1 404 Not Found\n\n");
-		return;
-	}
-	tprint(ofd, "HTTP/1.1 200 OK\nContent-length: %d\nContent-Type: %s\n\n%t", stats.st_size, filetype, path);
+
+	if (path && stat(path, &stats) != -1)
+		tprint(ofd, "HTTP/1.1 200 OK\nContent-length: %d\nContent-Type: %s\n\n%t", stats.st_size, filetype, path);
+	else if (!strdiff("text/html", filetype) && stat(NOT_FOUND, &stats) == 0)
+		tprint(ofd, "HTTP/1.1 404 Not Found\nContent-length: %d\nContent-Type: text/html\n\n%t", stats.st_size, NOT_FOUND);
+	else
+		print(ofd, "HTTP/1.1 404 Not Found\n\n");
 }
 
 void send_views_file(int ofd, char *filename)
@@ -55,12 +53,10 @@ void send_views_file(int ofd, char *filename)
 
 	while (filetypes[++i].ext)
 		if (endwith(filetypes[i].ext, filename) && (filetype = filetypes[i].mime))
-			break;
-	if (!filetype)
-	{
-		send_file(ofd, 0, "text/html");
-		return;
-	}
+			goto send_file;
+	send_file(ofd, 0, "text/html");
+
+	send_file:
 	i = 0;
 	while (path[i])
 		i++;
@@ -112,39 +108,40 @@ int verify_path(char *str)
 	return 1;
 }
 
+//TODO fix two request bug
+//TODO fix crash
+//TODO exit properly
 void *init_server() {
-	int									create_socket, new_socket;
+	int									sock, new_socket;
 	socklen_t						addrlen;
 	char								buffer[BUFF_SIZE] = {0};
 	struct sockaddr_in	address;
 
-	//filedescriptor = socket(
-	//	domain = AF_INET = IPv4 Internet protocols,
-	//	type = SOCK_STREAM = two-way, connection-based byte streams,
-	//	protocol = default
-	//);
-	if ((create_socket = socket(AF_INET, SOCK_STREAM, 0)) > 0)
-		loginfo("Starting server...");
-
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(80);
+	address.sin_port = htons(PORT);
 
-	if (bind(create_socket, (struct sockaddr *) &address, sizeof(address)) < 0)
-		logerror("Error binding (you may not have the permision or a server may be already launch on the port 80)", 1);
+	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0
+		|| bind(sock, (struct sockaddr *) &address, sizeof(address)) < 0
+		|| listen(sock, 10) < 0)
+	{
+		tprint(2, "Error stating server (you may not have the permision try sudo or a server may be already launch on the port %d)\n", PORT);
+		goto exit_thread;
+	}
 
-	loginfo("Server sucessfully lauch on port 80");
+	tprint(2, "Server sucessfully lauch on port %d\n", PORT);
+
 	while (1) {
-		if (listen(create_socket, 10) < 0)
-			logerror("Error listening request", 1);
-
-		if ((new_socket = accept(create_socket, (struct sockaddr *) &address, &addrlen)) < 0)
-			logerror("Error accepting request", 1);
+		if ((new_socket = accept(sock, (struct sockaddr *) &address, &addrlen)) < 0)
+		{
+			logerror("Error accepting new request");
+			goto exit_thread;
+		}
 
 		recv(new_socket, buffer, BUFF_SIZE, 0);
 		t_request request = parse_request(buffer);
 
-		tprint(1, "{\n\ttype: \"%s\",\n\turl: \"%s\",\n\tsheme: \"%s\"\n}\n", request.type, request.url, request.protocol);
+		tprint(1, "%s | %s | %s\n", request.type, request.url, request.protocol);
 
 		if (!strdiff(request.url, "/"))
 			send_file(new_socket, "views/index.html", "text/html");
@@ -155,5 +152,7 @@ void *init_server() {
 
 		close(new_socket);
 	}
-  pthread_exit(NULL);
+
+exit_thread:
+	pthread_exit(NULL);
 }

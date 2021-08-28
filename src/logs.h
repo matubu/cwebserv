@@ -2,6 +2,6 @@
 # define LOGS_H
 
 void loginfo(char *str);
-void logerror(char *str, int status);
+void logerror(char *str);
 
 #endif
