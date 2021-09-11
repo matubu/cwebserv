@@ -22,19 +22,20 @@ typedef struct filetype_s {
 
 const filetype_t filetypes[] = {
 	{ ".html", "text/html" },
-	{ ".htm", "text/html" },
 	{ ".txt", "text/plain" },
 	{ ".jpg", "image/jpg" },
 	{ ".jpeg", "image/jpeg" },
 	{ ".mp4", "video/mp4" },
 	{ ".gif", "image/gif" },
 	{ ".ico", "image/ico" },
+	{ ".css", "text/css" },
+	{ ".js", "text/javascript" },
 	{ 0 }
 };
 
 void	send_file(int ofd, char *path, char *filetype)
 {
-  struct stat stats;
+	struct stat stats;
 
 	if (path && stat(path, &stats) != -1)
 		tprint(ofd, "HTTP/1.1 200 OK\nContent-length: %d\nContent-Type: %s\n\n%t", stats.st_size, filetype, path);
@@ -56,7 +57,7 @@ void send_views_file(int ofd, char *filename)
 			goto send_file;
 	send_file(ofd, 0, "text/html");
 
-	send_file:
+send_file:
 	i = 0;
 	while (path[i])
 		i++;
@@ -76,8 +77,8 @@ typedef struct s_request
 //WARNING parse_request edit the request string
 t_request parse_request(char *str)
 {
-	char *head = str;
-	t_request request = {0,0,0};
+	char		*head = str;
+	t_request	request = {0,0,0};
 
 	while (*str && *str != '\n' && *str != '\r')
 		str++;
@@ -112,9 +113,9 @@ int verify_path(char *str)
 //TODO fix crash
 //TODO exit properly
 void *init_server() {
-	int									sock, new_socket;
-	socklen_t						addrlen;
-	char								buffer[BUFF_SIZE] = {0};
+	int					sock, new_socket;
+	socklen_t			addrlen;
+	char				buffer[BUFF_SIZE] = {0};
 	struct sockaddr_in	address;
 
 	address.sin_family = AF_INET;
@@ -141,7 +142,7 @@ void *init_server() {
 		recv(new_socket, buffer, BUFF_SIZE, 0);
 		t_request request = parse_request(buffer);
 
-		tprint(1, "%s | %s | %s\n", request.type, request.url, request.protocol);
+		tprint(1, "%s(\"%s\", %s)\n", request.type, request.url, request.protocol);
 
 		if (!strdiff(request.url, "/"))
 			send_file(new_socket, "views/index.html", "text/html");
