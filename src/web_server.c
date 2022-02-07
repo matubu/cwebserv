@@ -75,7 +75,7 @@ typedef struct s_request
 } t_request;
 
 /*
- * edit the request string to create a strict from it
+ * edit the request string to create a struct from it
  */
 t_request parse_request(char *str)
 {
