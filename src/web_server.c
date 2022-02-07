@@ -74,7 +74,9 @@ typedef struct s_request
 	char *protocol;
 } t_request;
 
-//WARNING parse_request edit the request string
+/*
+ * edit the request string to create a strict from it
+ */
 t_request parse_request(char *str)
 {
 	char		*head = str;
