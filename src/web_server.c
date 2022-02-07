@@ -111,7 +111,6 @@ int verify_path(char *str)
 	return 1;
 }
 
-//TODO exit properly
 void *init_server() {
 	int					sock, new_socket;
 	socklen_t			addrlen;
