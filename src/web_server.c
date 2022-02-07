@@ -6,7 +6,6 @@
 #include <fcntl.h> //open close
 #include <unistd.h> //read write
 #include <pthread.h>
-#include "logs.h"
 #include "utils.h"
 
 #define BUFF_SIZE 1024
@@ -134,7 +133,7 @@ void *init_server() {
 	while (1) {
 		if ((new_socket = accept(sock, (struct sockaddr *) &address, &addrlen)) < 0)
 		{
-			log("Error accepting new request");
+			tprint(2, "Error accepting new request");
 			goto exit_thread;
 		}
 
