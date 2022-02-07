@@ -101,7 +101,7 @@ t_request parse_request(char *str)
 /**
  * return 1 if the path is safe
  */
-int verify_path(char *str)
+int safe_path(char *str)
 {
 	int i = -1;
 
@@ -145,7 +145,7 @@ void *init_server() {
 
 		if (!strdiff(request.url, "/"))
 			send_file(new_socket, "views/index.html", "text/html");
-		else if (verify_path(request.url))
+		else if (safe_path(request.url))
 			send_views_file(new_socket, request.url);
 		else
 			send_file(new_socket, 0, "text/html");
