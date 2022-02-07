@@ -15,11 +15,10 @@ update:
 	git pull
 run: all
 	sudo ./main
-updaterun: update run
 clean:
 	rm -rf $(NAME)
 fclean: clean
 	rm -rf $(OBJS)
 re: fclean all
 
-.PHONY: setup all clean fclean re run update updaterun
+.PHONY: setup all clean fclean re run update
