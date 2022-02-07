@@ -1,13 +1,13 @@
-FLAGS = -pthread -Wall -Wextra -Werror
+FLAG = -pthread -Wall -Wextra -Werror
 SRCS = $(wildcard src/*.c)
-OUTPUT = $(patsubst src/%.c,bin/%.o,$(SRCS))
+OBJS = $(patsubst src/%.c,bin/%.o,$(SRCS))
 NAME = main
 
 bin/%.o: src/%.c
-	gcc $(FLAGS) -c src/$*.c -o bin/$*.o
+	gcc $(FLAG) -c $^ -o $@
 all: $(NAME)
-$(NAME): $(OUTPUT)
-	gcc $(FLAGS) $(OUTPUT) -o $(NAME)
+$(NAME): $(OBJS)
+	gcc $(FLAG) $(OBJS) -o $(NAME)
 setup: fclean
 	mkdir logs
 	mkdir bin
@@ -15,11 +15,11 @@ update:
 	git pull
 run: all
 	sudo ./main
-updtaterun: update localrun
+updaterun: update run
 clean:
 	rm -rf $(NAME)
 fclean: clean
-	rm -rf $(OUTPUT)
+	rm -rf $(OBJS)
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: setup all clean fclean re run updaterun
