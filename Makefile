@@ -22,4 +22,4 @@ fclean: clean
 	rm -rf $(OBJS)
 re: fclean all
 
-.PHONY: setup all clean fclean re run updaterun
+.PHONY: setup all clean fclean re run update updaterun
