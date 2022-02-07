@@ -19,25 +19,21 @@ void	print_char(char c)
 	write(1, &c, 1);
 }
 
-void	print(int fd, const char *buff)
+void	print(int fd, const char *buf)
 {
-	int len = 0;
-
-	while (buff[len])
-		len++;
-	write(fd, buff, len);
+	write(fd, buf, len(buf));
 }
 
 void	print_uint(int fd, unsigned int n)
 {
 	int i;
-	char res[11];
+	char buf[11];
 
 	i = 11;
-	res[--i] = n % 10 + '0';
+	buf[--i] = n % 10 + '0';
 	while (n /= 10)
-		res[--i] = n % 10 + '0';
-	write(fd, res + i, 11 - i);
+		buf[--i] = n % 10 + '0';
+	write(fd, buf + i, 11 - i);
 }
 
 void	print_int(int fd, int nb)
@@ -112,7 +108,6 @@ int	strdiff(char *a, char *b)
 		;
 	return (*a - *b);
 }
-//startwith
 
 int endwith(char *a, char *b)
 {
