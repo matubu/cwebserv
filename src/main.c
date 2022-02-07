@@ -11,7 +11,7 @@ int main()
 	pthread_t threads[THREADS_COUNT];
 
 	if (pthread_create(&threads[0], NULL, init_server, NULL))
-		logerror("Error creating thread for server");
+		log("Error creating thread for server");
 	// init_ws_server();
 	pthread_exit(NULL);
 }
