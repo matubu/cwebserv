@@ -111,8 +111,6 @@ int verify_path(char *str)
 	return 1;
 }
 
-//TODO fix two request bug
-//TODO fix crash
 //TODO exit properly
 void *init_server() {
 	int					sock, new_socket;
