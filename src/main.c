@@ -1,6 +1,5 @@
 #include <pthread.h>
 #include "web_server.h"
-#include "web_socket.h"
 #include "logs.h"
 
 #define THREADS_COUNT 1
