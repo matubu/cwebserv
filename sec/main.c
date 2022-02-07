@@ -110,7 +110,7 @@ int safe_path(char *str)
 	return 1;
 }
 
-void *init_server() {
+int main() {
 	int					sock, new_socket;
 	socklen_t			addrlen;
 	char				buffer[BUFF_SIZE] = {0};
@@ -125,7 +125,7 @@ void *init_server() {
 		|| listen(sock, 10) < 0)
 	{
 		tprint(2, "Error stating server (you may not have the permision try sudo or a server may be already launch on the port %d)\n", PORT);
-		goto exit_thread;
+		return (1);
 	}
 
 	tprint(2, "Server sucessfully lauch on port %d\n", PORT);
@@ -134,7 +134,7 @@ void *init_server() {
 		if ((new_socket = accept(sock, (struct sockaddr *) &address, &addrlen)) < 0)
 		{
 			tprint(2, "Error accepting new request");
-			goto exit_thread;
+			return (1);
 		}
 
 		recv(new_socket, buffer, BUFF_SIZE, 0);
@@ -151,7 +151,5 @@ void *init_server() {
 
 		close(new_socket);
 	}
-
-exit_thread:
-	pthread_exit(NULL);
+return (0);
 }
