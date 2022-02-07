@@ -134,7 +134,7 @@ void *init_server() {
 	while (1) {
 		if ((new_socket = accept(sock, (struct sockaddr *) &address, &addrlen)) < 0)
 		{
-			logerror("Error accepting new request");
+			log("Error accepting new request");
 			goto exit_thread;
 		}
 
