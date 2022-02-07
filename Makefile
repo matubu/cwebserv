@@ -14,7 +14,7 @@ setup: fclean
 update:
 	git pull
 run: all
-	sudo ./main
+	sudo ./$(NAME)
 clean:
 	rm -rf $(NAME)
 fclean: clean
