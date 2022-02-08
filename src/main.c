@@ -6,11 +6,12 @@
 #include <fcntl.h> //open close
 #include <unistd.h> //read write
 #include <pthread.h>
+#include <string.h>
 #include "utils.h"
 
-#define BUFF_SIZE 1024
-#define VIEWS_FOLDER "views/"
-#define PATH_BUFFER 1024
+#define BUF_SIZE 1024
+#define VIEWS "views/"
+#define PATH_BUF 1024
 #define NOT_FOUND "views/404.html"
 #define PORT 8080
 
@@ -44,26 +45,21 @@ void	send_file(int ofd, char *path, char *filetype)
 		print(ofd, "HTTP/1.1 404 Not Found\n\n");
 }
 
-void send_views_file(int ofd, char *filename)
+void sendf(int ofd, char *filename)
 {
-	char path[PATH_BUFFER] = VIEWS_FOLDER;
+	char path[PATH_BUF + 1] = VIEWS;
 	char *filetype = 0;
 	int i = -1;
-	int j = 0;
 
 	while (filetypes[++i].ext)
+	{
 		if (endwith(filetypes[i].ext, filename) && (filetype = filetypes[i].mime))
-			goto send_file;
+		{
+			send_file(ofd, strcat(path, filename), filetype);
+			return ;
+		}
+	}
 	send_file(ofd, 0, "text/html");
-
-send_file:
-	i = 0;
-	while (path[i])
-		i++;
-	while (filename[j] && i < PATH_BUFFER)
-		path[i++] = filename[j++];
-	path[i] = '\0';
-	send_file(ofd, path, filetype);
 }
 
 typedef struct s_request
@@ -104,6 +100,8 @@ int safe_path(char *str)
 {
 	int i = -1;
 
+	if (len(str) > PATH_BUF - len(VIEWS))
+		return (0);
 	while (str[++i])
 		if (str[i] == '.' && (i == 0 || str[i - 1] == '/' || str[i - 1] == '\\'))
 			return 0;
@@ -113,7 +111,7 @@ int safe_path(char *str)
 int main() {
 	int					sock, new_socket;
 	socklen_t			addrlen;
-	char				buf[BUFF_SIZE] = {0};
+	char				buf[BUF_SIZE + 1] = {0};
 	struct sockaddr_in	addr;
 
 	addr.sin_family = AF_INET;
@@ -137,7 +135,7 @@ int main() {
 			return (1);
 		}
 
-		recv(new_socket, buf, BUFF_SIZE, 0);
+		recv(new_socket, buf, BUF_SIZE, 0);
 		t_request request = parse_request(buf);
 
 		tprint(1, "%s(\"%s\", %s)\n", request.type, request.url, request.protocol);
@@ -145,7 +143,7 @@ int main() {
 		if (!strdiff(request.url, "/"))
 			send_file(new_socket, "views/index.html", "text/html");
 		else if (safe_path(request.url))
-			send_views_file(new_socket, request.url);
+			sendf(new_socket, request.url);
 		else
 			send_file(new_socket, 0, "text/html");
 
