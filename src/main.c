@@ -9,9 +9,9 @@
 #include <string.h>
 #include "utils.h"
 
-#define BUF_SIZE 1024
-#define VIEWS "views/"
+#define RECV_BUF 1024
 #define PATH_BUF 1024
+#define VIEWS "views/"
 #define NOT_FOUND "views/404.html"
 #define PORT 8080
 
@@ -135,7 +135,7 @@ int main() {
 			return (1);
 		}
 
-		ret = recv(new_socket, buf, BUF_SIZE, 0);
+		ret = recv(new_socket, buf, RECV_BUF, 0);
 		if (ret < 0) continue ; // need to close new_socket ?
 		buf[ret] = '\0';
 
