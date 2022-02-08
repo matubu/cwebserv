@@ -113,6 +113,7 @@ int main() {
 	socklen_t			addrlen;
 	char				buf[BUF_SIZE + 1] = {0};
 	struct sockaddr_in	addr;
+	int ret;
 
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = INADDR_ANY;
@@ -135,7 +136,9 @@ int main() {
 			return (1);
 		}
 
-		recv(new_socket, buf, BUF_SIZE, 0);
+		ret = recv(new_socket, buf, BUF_SIZE, 0);
+		if (ret < 0) continue ; // need to close new_socket ?
+		buf[ret] = '\0';
 		t_request request = parse_request(buf);
 
 		tprint(1, "%s(\"%s\", %s)\n", request.type, request.url, request.protocol);
