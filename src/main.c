@@ -12,7 +12,7 @@
 #define VIEWS_FOLDER "views/"
 #define PATH_BUFFER 1024
 #define NOT_FOUND "views/404.html"
-#define PORT 80
+#define PORT 8080
 
 typedef struct filetype_s {
 	char *ext;
@@ -113,32 +113,32 @@ int safe_path(char *str)
 int main() {
 	int					sock, new_socket;
 	socklen_t			addrlen;
-	char				buffer[BUFF_SIZE] = {0};
-	struct sockaddr_in	address;
+	char				buf[BUFF_SIZE] = {0};
+	struct sockaddr_in	addr;
 
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(PORT);
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = INADDR_ANY;
+	addr.sin_port = htons(PORT);
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0
-		|| bind(sock, (struct sockaddr *) &address, sizeof(address)) < 0
+		|| bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0
 		|| listen(sock, 10) < 0)
 	{
-		tprint(2, "Error stating server (you may not have the permision try sudo or a server may be already launch on the port %d)\n", PORT);
+		tprint(2, "Error stating server (you may not have the permision or a server may be already launch on the port %d)\n", PORT);
 		return (1);
 	}
 
 	tprint(2, "Server sucessfully lauch on port %d\n", PORT);
 
 	while (1) {
-		if ((new_socket = accept(sock, (struct sockaddr *) &address, &addrlen)) < 0)
+		if ((new_socket = accept(sock, (struct sockaddr *) &addr, &addrlen)) < 0)
 		{
 			tprint(2, "Error accepting new request");
 			return (1);
 		}
 
-		recv(new_socket, buffer, BUFF_SIZE, 0);
-		t_request request = parse_request(buffer);
+		recv(new_socket, buf, BUFF_SIZE, 0);
+		t_request request = parse_request(buf);
 
 		tprint(1, "%s(\"%s\", %s)\n", request.type, request.url, request.protocol);
 
