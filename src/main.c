@@ -80,7 +80,6 @@ t_request parse_request(char *str)
 	while (*str && *str != '\n' && *str != '\r')
 		str++;
 	*str = '\0';
-	loginfo(head);
 	request.type = head;
 	while(*head >= 'A' && *head <= 'Z')
 		head++;
