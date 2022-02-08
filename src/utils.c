@@ -118,6 +118,6 @@ int endwith(char *a, char *b)
 	j = len(b);
 	while (i-- && j--)
 		if (a[i] != b[j])
-			return 0;
-	return 1;
+			return (0);
+	return (j == -1);
 }
