@@ -112,12 +112,12 @@ int main() {
 	int					sock, new_socket;
 	socklen_t			addrlen;
 	char				buf[BUF_SIZE + 1] = {0};
-	struct sockaddr_in	addr;
+	struct sockaddr_in	addr = {
+		.sin_family = AF_INET,
+		.sin_addr.s_addr = INADDR_ANY,
+		.sin_port = htons(PORT)
+	};
 	int ret;
-
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = INADDR_ANY;
-	addr.sin_port = htons(PORT);
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0
 		|| bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0
@@ -139,6 +139,7 @@ int main() {
 		ret = recv(new_socket, buf, BUF_SIZE, 0);
 		if (ret < 0) continue ; // need to close new_socket ?
 		buf[ret] = '\0';
+
 		t_request request = parse_request(buf);
 
 		tprint(1, "%s(\"%s\", %s)\n", request.type, request.url, request.protocol);
