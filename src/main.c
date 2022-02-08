@@ -15,7 +15,7 @@
 #define NOT_FOUND "views/404.html"
 #define PORT 8080
 
-typedef struct filetype_s {
+typedef struct {
 	char *ext;
 	char *mime;
 } filetype_t;
