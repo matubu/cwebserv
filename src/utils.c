@@ -3,7 +3,7 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 
-#define BUFF_SIZE 8192
+#define SEND_BUF 8192
 
 int	len(const char *str)
 {
@@ -50,7 +50,7 @@ void print_file(int ofd, char *filename)
 	int	fd = open(filename, O_RDONLY);
 	long int off = 0;
 
-	while (sendfile(ofd, fd, &off, BUFF_SIZE))
+	while (sendfile(ofd, fd, &off, SEND_BUF))
 		;
 	close(fd);
 }
