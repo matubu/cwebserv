@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <fcntl.h>
+#include <string.h>
 #ifdef __APPLE__
 # include <sys/socket.h>
 #else
@@ -9,23 +10,9 @@
 
 #define SEND_BUF 8192
 
-int	len(const char *str)
-{
-	int len = 0;
-
-	while (str[len])
-		len++;
-	return len;
-}
-
-void	print_char(char c)
-{
-	write(1, &c, 1);
-}
-
 void	print(int fd, const char *buf)
 {
-	write(fd, buf, len(buf));
+	write(fd, buf, strlen(buf));
 }
 
 void	print_uint(int fd, unsigned int n)
@@ -49,11 +36,14 @@ void	print_int(int fd, int nb)
 	print_uint(fd, n);
 }
 
-void print_file(int ofd, char *filename)
+void	print_file(int ofd, char *filename)
 {
 	int	fd = open(filename, O_RDONLY);
 	long int off = 0;
 
+	print(1, filename);
+	print(1, "\n");
+	print_int(1, fd);
 #ifdef __APPLE__
 	struct sf_hdtr	hdtr = { NULL, 0, NULL, 0 };
 	while (sendfile(ofd, fd, &off, SEND_BUf, &hdtr, 0))
@@ -84,12 +74,6 @@ void	tprint(int fd, char *str, ...)
 				case '%':
 					write(1, "%", 1);
 					break;
-				case 'c':
-					print_char(va_arg(args, int));
-					break;
-				case 'u':
-					print_uint(fd, va_arg(args, unsigned int));
-					break;
 				case 'd':
 				case 'i':
 					print_int(fd, va_arg(args, int));
@@ -109,20 +93,10 @@ void	tprint(int fd, char *str, ...)
 	write(fd, str - i, i);
 }
 
-/**
- * same as strcmp
- */
-int	strdiff(char *a, char *b)
+int	endwith(char *a, char *b)
 {
-	while (*a && *a == *b && (a++ && b++))
-		;
-	return (*a - *b);
-}
-
-int endwith(char *a, char *b)
-{
-	int i = len(a);
-	int j = len(b);
+	int i = strlen(a);
+	int j = strlen(b);
 	if (j > i) return (0);
 	while (j)
 		if (a[--i] != b[--j])

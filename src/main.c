@@ -7,18 +7,18 @@
 #include <unistd.h> //read write
 #include <pthread.h>
 #include <string.h>
+#include <errno.h>
 #include "utils.h"
 
 #define RECV_BUF 1024
 #define PATH_BUF 1024
-#define VIEWS "views/"
-#define NOT_FOUND "views/404.html"
+#define VIEWS "./views/"
 #define PORT 8080
 
 typedef struct {
 	char *ext;
 	char *mime;
-} filetype_t;
+}	filetype_t;
 
 const filetype_t filetypes[] = {
 	{ ".html", "text/html" },
@@ -33,49 +33,58 @@ const filetype_t filetypes[] = {
 	{ 0 }
 };
 
-void	send_file(int ofd, char *path, char *filetype)
+/**
+ * return 1 if the path is safe
+ */
+int	safe_path(char *str)
 {
-	struct stat stats;
-
-	if (path && stat(path, &stats) != -1)
-		tprint(ofd, "HTTP/1.1 200 OK\nContent-length: %d\nContent-Type: %s\n\n%t", stats.st_size, filetype, path);
-	else if (!strdiff("text/html", filetype) && stat(NOT_FOUND, &stats) == 0)
-		tprint(ofd, "HTTP/1.1 404 Not Found\nContent-length: %d\nContent-Type: text/html\n\n%t", stats.st_size, NOT_FOUND);
-	else
-		print(ofd, "HTTP/1.1 404 Not Found\n\n");
-}
-
-void sendf(int ofd, char *filename)
-{
-	char path[PATH_BUF + 1] = VIEWS;
-	char *filetype = 0;
 	int i = -1;
 
-	while (filetypes[++i].ext)
-	{
-		if (endwith(filetypes[i].ext, filename) && (filetype = filetypes[i].mime))
-		{
-			send_file(ofd, strcat(path, filename), filetype);
-			return ;
-		}
-	}
-	send_file(ofd, 0, "text/html");
+	if (strlen(str) > PATH_BUF - strlen(VIEWS))
+		return (0);
+	while (str[++i])
+		if (str[i] == '.' && str[i + 1] == '.')
+			return 0;
+	return 1;
 }
 
-typedef struct s_request
+void	sendf(int ofd, char *filename)
+{
+	struct stat	stats;
+	char	path[PATH_BUF + 1] = VIEWS;
+	int		i = -1;
+
+	if (safe_path(filename))
+	{
+		strcat(path, filename);
+		while (filetypes[++i].ext)
+		{
+			if (endwith(filename, filetypes[i].ext))
+			{
+				if (stat(path, &stats) == -1)
+					break ;
+				tprint(ofd, "HTTP/1.1 200 OK\nContent-length: %d\nContent-Type: %s\n\n%t", stats.st_size, filetypes[i].mime, path);
+				return ;
+			}
+		}
+	}
+	print(ofd, "HTTP/1.1 404 Not Found\n\n");
+}
+
+typedef struct
 {
 	char *type;
 	char *url;
 	char *protocol;
-} t_request;
+}	t_request;
 
 /*
  * edit the request string to create a struct from it
  */
-t_request parse_request(char *str)
+t_request	parse_request(char *str)
 {
 	char		*head = str;
-	t_request	request = {0,0,0};
+	t_request	request = { NULL, NULL, NULL };
 
 	while (*str && *str != '\n' && *str != '\r')
 		str++;
@@ -89,25 +98,11 @@ t_request parse_request(char *str)
 		head++;
 	*head++ = '\0';
 	request.protocol = head;
+	tprint(1, "%s(\"%s\", %s)\n", request.type, request.url, request.protocol);
 	return request;
 }
 
-/**
- * return 1 if the path is safe
- */
-int safe_path(char *str)
-{
-	int i = -1;
-
-	if (len(str) > PATH_BUF - len(VIEWS))
-		return (0);
-	while (str[++i])
-		if (str[i] == '.' && (i == 0 || str[i - 1] == '/' || str[i - 1] == '\\'))
-			return 0;
-	return 1;
-}
-
-int main() {
+int	main() {
 	int					sock, new_socket;
 	socklen_t			addrlen;
 	char				buf[RECV_BUF + 1] = {0};
@@ -125,13 +120,13 @@ int main() {
 		return (1);
 	}
 
-	tprint(2, "Server sucessfully lauch on port %d\n", PORT);
+	tprint(2, "Server successfully launch on port %d\n", PORT);
 
 	while (1) {
 		if ((new_socket = accept(sock, (struct sockaddr *) &addr, &addrlen)) < 0)
 		{
 			tprint(2, "Error accepting new request");
-			return (1);
+			continue ;
 		}
 
 		int	ret = recv(new_socket, buf, RECV_BUF, 0);
@@ -139,16 +134,7 @@ int main() {
 		buf[ret] = '\0';
 
 		t_request request = parse_request(buf);
-
-		tprint(1, "%s(\"%s\", %s)\n", request.type, request.url, request.protocol);
-
-		if (!strdiff(request.url, "/"))
-			send_file(new_socket, "views/index.html", "text/html");
-		else if (safe_path(request.url))
-			sendf(new_socket, request.url);
-		else
-			send_file(new_socket, 0, "text/html");
-
+		sendf(new_socket, request.url);
 		close(new_socket);
 	}
 	return (0);

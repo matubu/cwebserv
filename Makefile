@@ -12,7 +12,7 @@ $(NAME): $(OBJS)
 update:
 	git pull
 run: all
-	sudo ./$(NAME)
+	./$(NAME)
 clean:
 	rm -rf $(NAME)
 fclean: clean
