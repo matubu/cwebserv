@@ -4,13 +4,11 @@ OBJS = $(patsubst src/%.c,bin/%.o,$(SRCS))
 NAME = main
 
 bin/%.o: src/%.c
+	mkdir -p bin
 	gcc $(FLAG) -c $^ -o $@
 all: $(NAME)
 $(NAME): $(OBJS)
 	gcc $(FLAG) $(OBJS) -o $(NAME)
-setup: fclean
-	mkdir logs
-	mkdir bin
 update:
 	git pull
 run: all
@@ -21,4 +19,4 @@ fclean: clean
 	rm -rf $(OBJS)
 re: fclean all
 
-.PHONY: setup all clean fclean re run update
+.PHONY: all clean fclean re run update

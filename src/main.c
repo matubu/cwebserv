@@ -110,19 +110,18 @@ int safe_path(char *str)
 int main() {
 	int					sock, new_socket;
 	socklen_t			addrlen;
-	char				buf[BUF_SIZE + 1] = {0};
+	char				buf[RECV_BUF + 1] = {0};
 	struct sockaddr_in	addr = {
 		.sin_family = AF_INET,
 		.sin_addr.s_addr = INADDR_ANY,
 		.sin_port = htons(PORT)
 	};
-	int ret;
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0
 		|| bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0
 		|| listen(sock, 10) < 0)
 	{
-		tprint(2, "Error stating server (you may not have the permision or a server may be already launch on the port %d)\n", PORT);
+		tprint(2, "Error starting server on the port %d\n", PORT);
 		return (1);
 	}
 
@@ -135,7 +134,7 @@ int main() {
 			return (1);
 		}
 
-		ret = recv(new_socket, buf, RECV_BUF, 0);
+		int	ret = recv(new_socket, buf, RECV_BUF, 0);
 		if (ret < 0) continue ; // need to close new_socket ?
 		buf[ret] = '\0';
 

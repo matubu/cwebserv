@@ -1,7 +1,11 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <fcntl.h>
-#include <sys/socket.h>
+#ifdef __APPLE__
+# include <sys/socket.h>
+#else
+# include <sys/sendfile.h>
+#endif
 
 #define SEND_BUF 8192
 
