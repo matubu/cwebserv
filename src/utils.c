@@ -54,8 +54,14 @@ void print_file(int ofd, char *filename)
 	int	fd = open(filename, O_RDONLY);
 	long int off = 0;
 
+#ifdef __APPLE__
+	struct sf_hdtr	hdtr = { NULL, 0, NULL, 0 };
+	while (sendfile(ofd, fd, &off, SEND_BUf, &hdtr, 0))
+		;
+#else
 	while (sendfile(ofd, fd, &off, SEND_BUF))
 		;
+#endif
 	close(fd);
 }
 
